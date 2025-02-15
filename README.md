@@ -11,14 +11,20 @@ A lightweight, Go-based CLI tool for standardizing Git commit messages. It offer
 
 ```
 .
+├── CHANGELOG.md
 ├── configs
-│   └── default.json         # Default commit form configuration in JSON.
-├── go.mod                   # Go module file.
+│   └── default.json  # Default commit form configuration in JSON.
+├── go.mod
 ├── internal
-│   ├── cmd.go               # Contains install, reinstall, uninstall, and version commands.
-│   ├── commit.go            # Handles commit message generation and execution.
-│   └── config.go            # Loads and renders configuration from configs/default.json.
-└── main.go                  # Main entry point that dispatches commands.
+│   ├── changelog.go  # Changelog generation.
+│   ├── cmd.go  # Contains install, reinstall, uninstall, and version commands.
+│   ├── commit.go  # Handles commit message generation and execution.
+│   ├── config.go  # Loads and renders configuration from configs/default.json.
+│   ├── lint.go  # Linter for commit message.
+│   └── version.go  # Bump versions.
+├── LICENSE
+├── main.go  # Main entry point that dispatches commands.
+└── README.md
 ```
 
 ## Installation
@@ -46,6 +52,9 @@ Gommitizen supports several subcommands. The main usage pattern is: `./gommitize
 - `uninstall`: Uninstalls the tool from Git's exec path.
 - `version`: Prints version information.
 - `commit`: Runs the interactive commit prompt, which loads configuration from configs/default.json, collects user input, renders the commit message, and then executes git commit.
+- `lint`: Runs a simple linter to check the input commit message.
+- `changelog`: Generates a changelog depending on the type of commit.
+- `bump`: Updates the VERSION with the current version.
 
 ### Configuration
 
