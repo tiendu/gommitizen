@@ -46,6 +46,12 @@ func CommitCommand(args []string) {
         log.Printf("Error rendering commit message: %v\n", err)
         return
     }
+    
+    // Within CommitCommand after rendering the message:
+    if err := LintCommitMessage(message); err != nil {
+        log.Printf("Commit message linting failed: %v\n", err)
+        return
+    }
 
     // Execute git commit with the assembled message.
     output, err := commitMessage(message, *allFlag)
