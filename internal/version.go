@@ -56,7 +56,9 @@ func BumpVersion() (string, error) {
     if err := ioutil.WriteFile("VERSION", []byte(newVersion), 0644); err != nil {
         return "", fmt.Errorf("failed to write VERSION file: %v", err)
     }
+
     fmt.Printf("Version bumped from %s to %s\n", versionStr, newVersion)
+
     return newVersion, nil
 }
 

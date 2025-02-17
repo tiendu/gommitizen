@@ -20,6 +20,7 @@ func InstallCommand() {
         fmt.Printf("Error determining executable path: %v\n", err)
         return
     }
+
     dest, err := installSubCmd(appFilePath, "cz")
     if err != nil {
         fmt.Printf("Install commitizen failed, err=%v\n", err)

@@ -26,9 +26,11 @@ func LintCommitMessage(message string) error {
             break
         }
     }
+
     if !valid {
         return fmt.Errorf("commit subject must start with one of the following types: %v", validTypes)
     }
+
     return nil
 }
 
