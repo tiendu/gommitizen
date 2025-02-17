@@ -15,6 +15,7 @@ func isGitRepo() bool {
     if err != nil {
         return false
     }
+
     info, err := os.Stat(filepath.Join(cwd, ".git"))
     return err == nil && info.IsDir()
 }
@@ -59,6 +60,7 @@ func CommitCommand(args []string) {
         log.Printf("Git commit failed: %v\n", err)
         log.Printf("Commit message was:\n%s\n", message)
     }
+
     fmt.Print(output)
 }
 
@@ -68,6 +70,7 @@ func commitMessage(message string, all bool) (string, error) {
     if all {
         args = append(args, "-a")
     }
+
     args = append(args, "-m", message)
     cmd := exec.Command("git", args...)
     out, err := cmd.CombinedOutput()
