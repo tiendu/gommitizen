@@ -47,10 +47,15 @@ func CommitCommand(args []string) {
         log.Printf("Error rendering commit message: %v\n", err)
         return
     }
-    
+
     // Within CommitCommand after rendering the message:
     if err := LintCommitMessage(message); err != nil {
         log.Printf("Commit message linting failed: %v\n", err)
+        return
+    }
+
+    if err := LintSensitiveFiles(); err != nil {
+        log.Printf("%v\n", err)
         return
     }
 
