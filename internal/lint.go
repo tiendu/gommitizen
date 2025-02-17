@@ -4,13 +4,30 @@ import (
     "fmt"
     "strings"
     "io/ioutil"
+    "math"
     "os"
     "os/exec"
     "regexp"
     "sync"
 )
 
-// LintSensitiveFilesConcurrent checks staged files concurrently.
+// calculateEntropy computes the Shannon entropy of a string.
+func calculateEntropy(s string) float64 {
+    freq := make(map[rune]float64)
+    for _, r := range s {
+        freq[r]++
+    }
+    var entropy float64
+    l := float64(len(s))
+    for _, count := range freq {
+        p := count / l
+        entropy -= p * math.Log2(p)
+    }
+    return entropy
+}
+
+// LintSensitiveFiles checks staged files concurrently for sensitive information,
+// ignoring files in the "internal/" directory.
 func LintSensitiveFiles() error {
     cmd := exec.Command("git", "diff", "--cached", "--name-only")
     output, err := cmd.Output()
@@ -23,12 +40,13 @@ func LintSensitiveFiles() error {
         return nil
     }
 
+    // Use word boundaries in regex patterns.
     patterns := []string{
-        "(?i)password",
-        "(?i)secret",
-        "(?i)apikey",
-        "(?i)token",
-        "(?i)credential",
+        `(?i)\bpassword\b`,
+        `(?i)\bsecret\b`,
+        `(?i)\bapikey\b`,
+        `(?i)\btoken\b`,
+        `(?i)\bcredential\b`,
     }
 
     var regexes []*regexp.Regexp
@@ -51,17 +69,16 @@ func LintSensitiveFiles() error {
         // Open file.
         f, err := os.Open(file)
         if err != nil {
-            // If a file can't be opened, log and continue.
             fmt.Printf("Warning: unable to open file %s: %v\n", file, err)
             continue
         }
 
-        defer f.Close()
-
         wg.Add(1)
-        go func(f string) {
+        // Pass both the filename and the file handle to the goroutine.
+        go func(file string, f *os.File) {
             defer wg.Done()
-            data, err := ioutil.ReadFile(f)
+            defer f.Close()
+            data, err := ioutil.ReadAll(f)
             if err != nil {
                 // Skip files that cannot be read.
                 return
@@ -69,11 +86,17 @@ func LintSensitiveFiles() error {
 
             for _, re := range regexes {
                 if re.Match(data) {
-                    errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s)", f, re.String())
-                    return
+                    // Extract the matched substring.
+                    match := re.Find(data)
+                    entropy := calculateEntropy(string(match))
+                    // Only flag if entropy exceeds a threshold (e.g., 3.5).
+                    if entropy > 3.5 {
+                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", file, re.String(), entropy)
+                        return
+                    }
                 }
             }
-        }(file)
+        }(file, f)
     }
 
     wg.Wait()
@@ -89,6 +112,7 @@ func LintSensitiveFiles() error {
 
     return nil
 }
+
 
 // LintCommitMessage checks if the commit message adheres to predefined rules.
 func LintCommitMessage(message string) error {
