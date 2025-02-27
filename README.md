@@ -63,6 +63,7 @@ Gommitizen supports several subcommands. The main usage pattern is: `./gommitize
 - `lint`: Runs a linter to validate the commit message.
 - `changelog`: Generates a changelog depending on the type of commit.
 - `bump`: Updates the VERSION with the current version.
+- `COMMITIZEN_INSTALL_PATH`: Custom path for the installation.
 
 ### Configuration
 

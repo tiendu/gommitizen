@@ -31,11 +31,15 @@ func InstallCommand() {
 
 // installSubCmd copies the current binary to Git's exec-path with the name "git-<subCmd>".
 func installSubCmd(appFilePath, subCmd string) (string, error) {
-    out, err := exec.Command("git", "--exec-path").Output()
-    if err != nil {
-        return "", err
+    // Allow override of installation path using en environment variable
+    execPath := os.Getenv("COMMITIZEN_INSTALL_PATH")
+    if execPath == "" {
+        out, err := exec.Command("git", "--exec-path").Output()
+        if err != nil {
+            return "", err
+        }
+        execPath = strings.TrimSpace(string(out))
     }
-    execPath := strings.TrimSpace(string(out))
     destPath := filepath.Join(execPath, "git-"+subCmd)
 
     // Ensure the exec directory exists.
