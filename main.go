@@ -14,7 +14,7 @@ func main() {
     }
     args := os.Args[1:]
 
-    switch args[1] {
+    switch args[0] {
     case "install":
         cmd.InstallCommand()
     case "reinstall":
