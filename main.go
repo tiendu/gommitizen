@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "gommitizen/internal"
+    "gommitizen/cmd"
 )
 
 func main() {
@@ -11,18 +12,17 @@ func main() {
         usage()
         os.Exit(1)
     }
-    cmd := os.Args[1]
-    args := os.Args[2:]
+    args := os.Args[1:]
 
-    switch cmd {
+    switch args[1] {
     case "install":
-        internal.InstallCommand()
+        cmd.InstallCommand()
     case "reinstall":
-        internal.ReinstallCommand()
+        cmd.ReinstallCommand()
     case "uninstall":
-        internal.UninstallCommand()
+        cmd.UninstallCommand()
     case "version":
-        internal.VersionCommand()
+        cmd.VersionCommand()
     case "commit":
         internal.CommitCommand(args)
     case "changelog":
@@ -30,7 +30,7 @@ func main() {
             fmt.Printf("Changelog generation failed: %v\n", err)
         }
     case "bump":
-        if newVersion, err := internal.BumpVersion(); err != nil {
+        if newVersion, err := cmd.BumpVersion(); err != nil {
             fmt.Printf("Version bump failed: %v\n", err)
         } else {
             fmt.Printf("New version: %s\n", newVersion)
@@ -49,7 +49,7 @@ func main() {
             fmt.Println("Commit message passes linting.")
         }
     default:
-        fmt.Printf("Unknown command: %s\n", cmd)
+        fmt.Printf("Unknown command: %s\n", args[1])
         usage()
         os.Exit(1)
     }

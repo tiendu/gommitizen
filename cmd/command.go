@@ -1,4 +1,4 @@
-package internal
+package cmd
 
 import (
     "fmt"
@@ -69,19 +69,18 @@ func installSubCmd(appFilePath, subCmd string) (string, error) {
 
 // UninstallCommand removes the installed Git subcommand (git-cz).
 func UninstallCommand() {
-    out, err := exec.Command("git", "--exec-path").Output()
+    // Look up the binary in the system PATH.
+    path, err := exec.LookPath("git-cz")
     if err != nil {
-        fmt.Printf("Error obtaining git exec path: %v\n", err)
+        fmt.Printf("git-cz not found in PATH, nothing to uninstall.\n")
         return
     }
-    execPath := strings.TrimSpace(string(out))
-    destPath := filepath.Join(execPath, "git-cz")
-
-    if err := os.Remove(destPath); err != nil {
+    // Remove the found binary.
+    if err := os.Remove(path); err != nil {
         fmt.Printf("Uninstall failed: %v\n", err)
         return
     }
-    fmt.Printf("Uninstalled commitizen from %s\n", destPath)
+    fmt.Printf("Uninstalled commitizen from %s\n", path)
 }
 
 // ReinstallCommand uninstalls and then reinstalls the tool.
