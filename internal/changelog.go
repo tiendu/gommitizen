@@ -95,10 +95,10 @@ func GenerateChangelog() error {
         buf.WriteString("\n")
     }
 
-    // Write the content to CHANGELOG.md.
-    changelogPath := filepath.Join(".", "CHANGELOG.md")
+    // Write the content to CHANGELOG.
+    changelogPath := filepath.Join(".", "CHANGELOG")
     if err := ioutil.WriteFile(changelogPath, buf.Bytes(), 0644); err != nil {
-        return fmt.Errorf("failed to write CHANGELOG.md: %v", err)
+        return fmt.Errorf("failed to write CHANGELOG: %v", err)
     }
     fmt.Println("Changelog generated in", changelogPath)
     return nil
