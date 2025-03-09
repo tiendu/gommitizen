@@ -7,6 +7,7 @@ import (
     "os"
     "os/exec"
     "path/filepath"
+    "strings"
 )
 
 // isGitRepo checks if the current directory is a Git repository.
