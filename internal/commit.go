@@ -15,9 +15,20 @@ func isGitRepo() bool {
     if err != nil {
         return false
     }
-
-    info, err := os.Stat(filepath.Join(cwd, ".git"))
-    return err == nil && info.IsDir()
+    gitPath := filepath.Join(cwd, ".git")
+    info, err := os.Stat(gitPath)
+    if err != nil {
+        return false
+    }
+    if info.IsDir() {
+        return true
+    }
+    // If .git is a file, check if it contains a reference to the actual git directory.
+    data, err := os.ReadFile(gitPath)
+    if err != nil {
+        return false
+    }
+    return strings.HasPrefix(string(data), "gitdir:")
 }
 
 // CommitCommand loads configuration, collects user input, renders the commit message, and executes the git commit command.
