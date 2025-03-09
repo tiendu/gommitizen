@@ -13,6 +13,26 @@ import (
 var VersionStr = "0.1.0"
 var RevisionStr = "unknown"
 
+func HelpCommand() {
+    fmt.Println(`Usage: gommitizen <command> [options]
+
+Commands:
+  install      Install this tool as a Git subcommand (git-cz)
+  reinstall    Uninstall and then reinstall the tool
+  uninstall    Remove the installed Git subcommand (git-cz)
+  version      Print version information
+  commit       Create a commit using the configured commitizen flow
+  changelog    Generate a CHANGELOG.md from commit logs
+  bump         Bump the version automatically
+  lint         Lint a commit message
+  help         Display this help message
+
+Options:
+  INSTALL_PATH
+       Override the default installation path (which is Git's exec-path)
+       Example: INSTALL_PATH=/usr/local/bin gommitizen install`)
+}
+
 // InstallCommand installs this binary as a Git subcommand (git-cz).
 func InstallCommand() {
     appFilePath, err := os.Executable()
@@ -32,7 +52,7 @@ func InstallCommand() {
 // installSubCmd copies the current binary to Git's exec-path with the name "git-<subCmd>".
 func installSubCmd(appFilePath, subCmd string) (string, error) {
     // Allow override of installation path using en environment variable
-    execPath := os.Getenv("COMMITIZEN_INSTALL_PATH")
+    execPath := os.Getenv("INSTALL_PATH")
     if execPath == "" {
         out, err := exec.Command("git", "--exec-path").Output()
         if err != nil {

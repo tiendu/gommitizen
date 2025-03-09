@@ -20,18 +20,19 @@ Gommitizen is built exclusively with Go’s standard library. This design decisi
 ```
 .
 ├── CHANGELOG.md
+├── cmd
+│   ├── options.go  # Contains install, reinstall, uninstall, and version commands.
+│   └── version.go  # Version management.
 ├── configs
 │   └── default.json  # Default commit form configuration in JSON.
 ├── go.mod
 ├── internal
 │   ├── changelog.go  # Changelog generation.
-│   ├── cmd.go  # Contains install, reinstall, uninstall, and version commands.
-│   ├── commit.go  # Handles commit message generation and execution.
+│   ├── commit.go # Handles commit message generation and execution.
 │   ├── config.go  # Loads and renders configuration from configs/default.json.
 │   ├── lint.go  # Commit message linter.
-│   └── version.go  # Version management.
 ├── LICENSE
-├── main.go  # Main entry point that dispatches commands.
+├── main.go
 └── README.md
 ```
 
@@ -63,7 +64,7 @@ Gommitizen supports several subcommands. The main usage pattern is: `./gommitize
 - `lint`: Runs a linter to validate the commit message.
 - `changelog`: Generates a changelog depending on the type of commit.
 - `bump`: Updates the VERSION with the current version.
-- `COMMITIZEN_INSTALL_PATH`: Custom path for the installation.
+- `INSTALL_PATH`: Custom path for the installation.
 
 ### Configuration
 
