@@ -14,24 +14,6 @@ import (
     "text/template"
 )
 
-// ANSI style constants
-const (
-    DefaultColorReset  = "\033[0m"
-    DefaultColorGreen  = "\033[32m"
-    DefaultColorYellow = "\033[33m"
-    DefaultColorCyan   = "\033[36m"
-    DefaultBold        = "\033[1m"
-)
-
-// Global style variables (adjustable in one place)
-var (
-    PromptColor      = DefaultColorGreen  // Color for input prompts.
-    DescriptionColor = DefaultColorCyan   // Color for field descriptions.
-    OptionColor      = DefaultColorYellow // Color for option numbers.
-    BoldStyle        = DefaultBold        // Bold style.
-    ColorReset       = DefaultColorReset  // Reset style.
-)
-
 // Option represents a selectable option for a form item.
 type Option struct {
     Name string `json:"name"`
@@ -40,17 +22,14 @@ type Option struct {
 
 // Item represents a field in the commit form.
 type Item struct {
-    Name     string   `json:"name"`
-    Desc     string   `json:"desc"`
-    Form     string   `json:"form"`
-    Options  []Option `json:"options,omitempty"`
-    Required bool     `json:"required,omitempty"`
-    // Optional default value.
-    Default string `json:"default,omitempty"`
-    // Optional hint to guide the user.
-    Hint string `json:"hint,omitempty"`
-    // Optional validation rule (for documentation purposes).
-    Validation string `json:"validation,omitempty"`
+    Name       string   `json:"name"`
+    Desc       string   `json:"desc"`
+    Form       string   `json:"form"`
+    Options    []Option `json:"options,omitempty"`
+    Required   bool     `json:"required,omitempty"`
+    Default    string   `json:"default,omitempty"`
+    Hint       string   `json:"hint,omitempty"`
+    Validation string   `json:"validation,omitempty"`
 }
 
 // MessageConfig holds the form definition and commit message template.
@@ -64,28 +43,23 @@ type Config struct {
     Message MessageConfig `json:"message"`
 }
 
-// LoadConfig loads the configuration from the file "configs/default.json"
-// relative to the current working directory.
+// LoadConfig loads the configuration from the file "configs/default.json".
 func LoadConfig() (Config, error) {
     var cfg Config
     configPath := filepath.Join("configs", "default.json")
-
     data, err := ioutil.ReadFile(configPath)
     if err != nil {
         return cfg, fmt.Errorf("failed to read config file %s: %v", configPath, err)
     }
-
     if err := json.Unmarshal(data, &cfg); err != nil {
         return cfg, fmt.Errorf("failed to parse config file %s: %v", configPath, err)
     }
-
     log.Printf("Loaded config from %s\n", configPath)
     return cfg, nil
 }
 
 // LoadDefaultConfig returns a built-in default configuration as a fallback.
 func LoadDefaultConfig() Config {
-    // A minimal built-in config (fallback) without repetition.
     defaultJSON := `{
         "message": {
             "items": [
@@ -144,6 +118,34 @@ func LoadDefaultConfig() Config {
     return cfg
 }
 
+// getHighlightColors returns the foreground and background colors for a change type option.
+func getHighlightColors(option string) (fg, bg string) {
+    switch strings.ToLower(option) {
+    case "feat":
+        return "white", "green"
+    case "fix":
+        return "white", "red"
+    case "docs":
+        return "black", "cyan"
+    case "style":
+        return "black", "yellow"
+    case "refactor":
+        return "white", "blue"
+    case "perf":
+        return "black", "magenta"
+    case "test":
+        return "white", "black"
+    case "chore":
+        return "white", "cyan"
+    case "revert":
+        return "black", "green"
+    case "wip":
+        return "black", "white"
+    default:
+        return "white", "black"
+    }
+}
+
 // CollectUserInput prompts the user for input based on the configuration.
 func CollectUserInput(cfg Config) map[string]string {
     reader := bufio.NewReader(os.Stdin)
@@ -151,38 +153,43 @@ func CollectUserInput(cfg Config) map[string]string {
 
     for _, item := range cfg.Message.Items {
         var input string
-
         for {
-            // Print the field description in bold and in the designated color.
-            fmt.Println(BoldStyle + DescriptionColor + item.Desc + ColorReset)
-            // Optionally, display a hint if available.
+            // Print the field description using bold and color.
+            // (Using our beautify helpers: Bold and Color.)
+            fmt.Println(Bold(Color(item.Desc, "cyan")))
             if item.Hint != "" {
                 fmt.Println("Hint:", item.Hint)
             }
 
-            // For select fields, list the options.
             if item.Form == "select" {
+                // List the options.
                 for idx, option := range item.Options {
-                    // For the "type" field, highlight option names in bold.
+                    // For the "type" field, use our Highlight function.
                     if strings.ToLower(item.Name) == "type" {
-                        fmt.Printf("%s%d%s) %s%s%s: %s\n", OptionColor, idx+1, ColorReset, BoldStyle, option.Name, ColorReset, option.Desc)
+                        fg, bg := getHighlightColors(option.Name)
+                        fmt.Printf("%s) %s: %s\n",
+                            Color(strconv.Itoa(idx+1), "yellow"),
+                            Highlight(option.Name, fg, bg),
+                            option.Desc)
                     } else {
-                        fmt.Printf("%s%d%s) %s: %s\n", OptionColor, idx+1, ColorReset, option.Name, option.Desc)
+                        fmt.Printf("%s) %s: %s\n",
+                            Color(strconv.Itoa(idx+1), "yellow"),
+                            option.Name,
+                            option.Desc)
                     }
                 }
-                // Prompt for the option number.
-                fmt.Print(PromptColor + "Enter option number: " + ColorReset)
+                fmt.Print(Color("Enter option number: ", "green"))
             } else {
-                // For input and multiline fields.
-                prompt := "Enter value: "
+                // For input or multiline fields.
+                prompt := "Enter value"
                 if item.Required {
-                    prompt = "Enter value (required): "
+                    prompt += " (required)"
                 }
-                // If a default value exists, show it.
                 if item.Default != "" {
-                    prompt = fmt.Sprintf("%s (default: %s): ", prompt, item.Default)
+                    prompt += fmt.Sprintf(" (default: %s)", item.Default)
                 }
-                fmt.Print(PromptColor + prompt + ColorReset)
+                prompt += ": "
+                fmt.Print(Color(prompt, "green"))
             }
 
             rawInput, err := reader.ReadString('\n')
@@ -191,17 +198,13 @@ func CollectUserInput(cfg Config) map[string]string {
                 continue
             }
             input = strings.TrimSpace(rawInput)
-
-            // Use default if input is empty and default exists.
             if input == "" && item.Default != "" {
                 input = item.Default
             }
-
             if input == "" && item.Required {
                 fmt.Println("This field is required.")
                 continue
             }
-
             break
         }
 
@@ -214,7 +217,6 @@ func CollectUserInput(cfg Config) map[string]string {
                 input = item.Options[choice-1].Name
             }
         }
-
         userInput[item.Name] = input
     }
 
@@ -227,12 +229,10 @@ func RenderTemplate(cfg Config, data map[string]string) (string, error) {
     if err != nil {
         return "", err
     }
-
     var buf bytes.Buffer
     if err := tmpl.Execute(&buf, data); err != nil {
         return "", err
     }
-
     return buf.String(), nil
 }
 
