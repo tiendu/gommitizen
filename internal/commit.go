@@ -4,32 +4,18 @@ import (
     "flag"
     "fmt"
     "log"
-    "os"
     "os/exec"
-    "path/filepath"
     "strings"
 )
 
 // isGitRepo checks if the current directory is a Git repository.
 func isGitRepo() bool {
-    cwd, err := os.Getwd()
+    cmd := exec.Command("git", "rev-parse", "--is-inside-work-tree")  // Work for Git ^1.7.0
+    out, err := cmd.CombinedOutput()
     if err != nil {
         return false
     }
-    gitPath := filepath.Join(cwd, ".git")
-    info, err := os.Stat(gitPath)
-    if err != nil {
-        return false
-    }
-    if info.IsDir() {
-        return true
-    }
-    // If .git is a file, check if it contains a reference to the actual git directory.
-    data, err := os.ReadFile(gitPath)
-    if err != nil {
-        return false
-    }
-    return strings.HasPrefix(string(data), "gitdir:")
+    return strings.TrimSpace(string(out)) == "true"
 }
 
 // CommitCommand loads configuration, collects user input, renders the commit message, and executes the git commit command.
