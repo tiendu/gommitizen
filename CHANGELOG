@@ -1,0 +1,33 @@
+# Changelog
+
+## feat
+
+- [92bd079] 2025-03-10 00:07:31 +0700 feat: add color highlighting
+- [e705293] 2025-03-09 18:37:15 +0700 feat: check for git worktree dir before commit
+- [9a64ab9] 2025-02-17 15:12:44 +0700 feat: use entropy for linter to avoid false positives
+- [8a4fa7e] 2025-02-27 23:50:30 +0700 feat: Custom path installation
+- [77236e5] 2025-02-17 11:01:39 +0700 feat: linter now can check if sensitive info exists in staged files
+
+## style
+
+- [0c07bd0] 2025-02-17 10:05:16 +0700 style: add newlines to make it easy to read
+
+## unknown
+
+- [d221f76] 2025-02-15 15:50:08 +0700 squashed
+- [6fa11b2] 2025-02-15 00:26:14 +0700 init
+
+## refactor
+
+- [a36be00] 2025-03-12 18:10:48 +0700 refactor: adjust to meet https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with-scope (#4)
+- [3b3fd6e] 2025-03-02 22:47:07 +0700 refactor: rename command.go to options.go
+- [c575f32] 2025-03-05 14:45:10 +0700 refactor: adjust changelog.md to changelog
+- [7245aed] 2025-03-02 22:31:55 +0700 refactor: reorganize commands to a separate dir
+- [e729452] 2025-03-02 22:32:37 +0700 refactor: uninstall now look for path where bin is located
+- [e589af4] 2025-03-09 22:10:06 +0700 refactor: add help, remove available commands directly from gommitizen binary
+
+## fix
+
+- [8665c06] 2025-03-12 18:07:30 +0700 fix: now recognize gitdir even in subdir (#3)
+- [dc941d6] 2025-03-09 21:09:42 +0700 fix: missing strings lib
+
