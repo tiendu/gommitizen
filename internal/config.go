@@ -108,7 +108,7 @@ func LoadDefaultConfig() Config {
                     "default": ""
                 }
             ],
-            "template": "{{.type}}{{if .scope}} ({{.scope}}){{end}}: {{.subject}}{{if .body}}\n\n{{.body}}{{end}}{{if .footer}}\n\n{{.footer}}{{end}}"
+            "template": "{{.type}}{{if .scope}}({{.scope}}){{end}}: {{.subject}}{{if .body}}\n\n{{.body}}{{end}}{{if .footer}}\n\n{{.footer}}{{end}}"
         }
     }`
     var cfg Config
