@@ -3,7 +3,6 @@ package main
 import (
     "os"
     "fmt"
-    "flag"
 
     "gommitizen/cmd"
     "gommitizen/internal"
@@ -44,46 +43,29 @@ func main() {
         } else {
             fmt.Printf("New version: %s\n", newVersion)
         }
-case "lint":
-    lintFlags := flag.NewFlagSet("lint", flag.ExitOnError)
-    // Define both long and short forms.
-    lintAllLong := lintFlags.Bool("all", false, "Lint all commit messages")
-    lintAllShort := lintFlags.Bool("a", false, "Lint all commit messages (short)")
-    lintCurrentLong := lintFlags.Bool("current", false, "Lint the current commit message")
-    lintCurrentShort := lintFlags.Bool("c", false, "Lint the current commit message (short)")
-    lintFlags.Parse(os.Args[2:])
-
-    // Combine flag values: if either the long or short flag is true, treat it as active.
-    lintAll := *lintAllLong || *lintAllShort
-    lintCurrent := *lintCurrentLong || *lintCurrentShort
-
-    if lintAll {
-        err := internal.LintAllCommitMessage()
+    case "lint":
+        // Parse lint-specific flags using the helper.
+        opts, err := cmd.ParseLintOptions(os.Args[2:])
         if err != nil {
-            fmt.Printf(err.Error())
+            fmt.Println("Failed to parse lint flags:", err)
             os.Exit(1)
         }
-        fmt.Println(internal.Color("All commit messages pass linting.", "green"))
-    } else if lintCurrent {
-        err := internal.LintCurrentCommitMessage()
-        if err != nil {
-            fmt.Printf(err.Error())
-            os.Exit(1)
+
+        if opts.All {
+            err = internal.LintAllCommitMessage()
+            if err != nil {
+                fmt.Printf(err.Error())
+                os.Exit(1)
+            }
+            fmt.Println(internal.Color("All commit messages pass linting.", "green"))
+        } else if opts.Current {
+            err := internal.LintCurrentCommitMessage()
+            if err != nil {
+                fmt.Printf(err.Error())
+                os.Exit(1)
+            }
+            fmt.Println(internal.Color("Current commit message passes linting.", "green"))
         }
-        fmt.Println(internal.Color("Current commit message passes linting.", "green"))
-    } else {
-        if lintFlags.NArg() < 1 {
-            fmt.Println("Usage: gommitizen lint --all (or -a) OR gommitizen lint --current (or -c)")
-            os.Exit(1)
-        }
-        // Optionally, lint a provided commit message directly.
-        message := lintFlags.Arg(0)
-        if err := internal.LintCommitMessage(message); err != nil {
-            fmt.Printf(err.Error())
-            os.Exit(1)
-        }
-        fmt.Println(internal.Color("Commit message passes linting.", "green"))
-    }
     default:
         // If an unknown command is provided, show help.
         cmd.HelpCommand()

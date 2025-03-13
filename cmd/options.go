@@ -4,6 +4,7 @@ import (
     "fmt"
     "io"
     "os"
+    "flag"
     "os/exec"
     "path/filepath"
     "strings"
@@ -24,7 +25,11 @@ Commands:
   commit       Create a commit using the configured commitizen flow
   changelog    Generate a CHANGELOG.md from commit logs
   bump         Bump the version automatically
-  lint         Lint a commit message
+  lint         Lint commit messages
+      Options for lint:
+          --all, -a      Lint all commit messages in the repository.
+          --current, -c  Lint only the current (latest) commit message.
+          [commit-message]  Optionally, provide a commit message directly.
   help         Display this help message
 
 Options:
@@ -114,3 +119,30 @@ func VersionCommand() {
     fmt.Printf("Commitizen version %s, build revision %s\n", VersionStr, RevisionStr)
 }
 
+// LintOptions holds the options for the lint command.
+type LintOptions struct {
+    All     bool
+    Current bool
+    Message string
+}
+
+// ParseLintOptions parses the lint command flags (both long and short forms)
+// and returns a LintOptions struct.
+func ParseLintOptions(args []string) (LintOptions, error) {
+    // Create a new FlagSet for the lint command.
+    lf := flag.NewFlagSet("lint", flag.ExitOnError)
+    allLong := lf.Bool("all", false, "Lint all commit messages")
+    allShort := lf.Bool("a", false, "Lint all commit messages (short)")
+    currentLong := lf.Bool("current", false, "Lint the current commit message")
+    currentShort := lf.Bool("c", false, "Lint the current commit message (short)")
+    lf.Parse(args)
+
+    opts := LintOptions{
+        All:     *allLong || *allShort,
+        Current: *currentLong || *currentShort,
+    }
+    if lf.NArg() > 0 {
+        opts.Message = lf.Arg(0)
+    }
+    return opts, nil
+}
