@@ -113,19 +113,17 @@ func LintSensitiveFiles() error {
     return nil
 }
 
-
 // LintCommitMessage checks if the commit message adheres to predefined rules.
 func LintCommitMessage(message string) error {
     // Example: Ensure the subject (first line) is non-empty and under 100 characters.
     lines := strings.SplitN(message, "\n", 2)
     subject := strings.TrimSpace(lines[0])
     if len(subject) == 0 {
-        return fmt.Errorf("commit subject cannot be empty")
+        return fmt.Errorf("%s", "commit subject cannot be empty")
     }
     if len(subject) > 100 {
-        return fmt.Errorf("commit subject is too long (max 100 characters)")
+        return fmt.Errorf("%s", "commit subject is too long (max 100 characters)")
     }
-
     // Example: Optionally enforce that the commit message starts with a valid type.
     validTypes := []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "revert", "WIP"}
     valid := false
@@ -140,6 +138,53 @@ func LintCommitMessage(message string) error {
         return fmt.Errorf("commit subject must start with one of the following types: %v", validTypes)
     }
 
+    return nil
+}
+
+// LintCurrentCommitMessage lints the current commit messages.
+func LintCurrentCommitMessage() error {
+    // Get the latest commit message from HEAD.
+    cmd := exec.Command("git", "log", "-1", "--pretty=%B")
+    output, err := cmd.Output()
+    if err != nil {
+        return fmt.Errorf("failed to get commit message: %v", err)
+    }
+    message := strings.TrimSpace(string(output))
+    // Lint the commit message using LintCommitMessage.
+    return LintCommitMessage(message)
+}
+
+// LintAllCommitMessage lints all commit messages.
+func LintAllCommitMessage() error {
+    // Get all commit hashes from the repository.
+    cmd := exec.Command("git", "log", "--pretty=%H")
+    output, err := cmd.Output()
+    if err != nil {
+        return fmt.Errorf("failed to get commit hashes: %v", err)
+    }
+    hashes := strings.Split(strings.TrimSpace(string(output)), "\n")
+    if len(hashes) == 0 {
+        return nil
+    }
+
+    var combinedErrors []string
+    // Iterate over each commit hash.
+    for _, hash := range hashes {
+        // Get the commit message for this commit.
+        cmdMsg := exec.Command("git", "log", "-1", "--pretty=%B", hash)
+        msgOut, err := cmdMsg.Output()
+        if err != nil {
+            combinedErrors = append(combinedErrors, fmt.Sprintf("failed to get commit message for %s: %v", hash, err))
+            continue
+        }
+        message := strings.TrimSpace(string(msgOut))
+        if err := LintCommitMessage(message); err != nil {
+            combinedErrors = append(combinedErrors, fmt.Sprintf("commit %s: %v", hash, err))
+        }
+    }
+    if len(combinedErrors) > 0 {
+        return fmt.Errorf("linting errors found:\n%s", strings.Join(combinedErrors, "\n"))
+    }
     return nil
 }
 
