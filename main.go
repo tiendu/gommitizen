@@ -60,17 +60,17 @@ case "lint":
     if lintAll {
         err := internal.LintAllCommitMessage()
         if err != nil {
-            fmt.Printf("Lint all commit messages failed:\n%v\n", err)
+            fmt.Printf(err.Error())
             os.Exit(1)
         }
-        fmt.Println("All commit messages pass linting.")
+        fmt.Println(internal.Color("All commit messages pass linting.", "green"))
     } else if lintCurrent {
         err := internal.LintCurrentCommitMessage()
         if err != nil {
-            fmt.Printf("Current commit message linting failed:\n%v\n", err)
+            fmt.Printf(err.Error())
             os.Exit(1)
         }
-        fmt.Println("Current commit message passes linting.")
+        fmt.Println(internal.Color("Current commit message passes linting.", "green"))
     } else {
         if lintFlags.NArg() < 1 {
             fmt.Println("Usage: gommitizen lint --all (or -a) OR gommitizen lint --current (or -c)")
@@ -79,10 +79,10 @@ case "lint":
         // Optionally, lint a provided commit message directly.
         message := lintFlags.Arg(0)
         if err := internal.LintCommitMessage(message); err != nil {
-            fmt.Printf("Lint failed: %v\n", err)
+            fmt.Printf(err.Error())
             os.Exit(1)
         }
-        fmt.Println("Commit message passes linting.")
+        fmt.Println(internal.Color("Commit message passes linting.", "green"))
     }
     default:
         // If an unknown command is provided, show help.

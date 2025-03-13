@@ -69,7 +69,7 @@ func LintSensitiveFiles() error {
         // Open file.
         f, err := os.Open(file)
         if err != nil {
-            fmt.Printf("Warning: unable to open file %s: %v\n", file, err)
+            fmt.Printf("Warning: unable to open file %s: %v\n", Color(file, "yellow"), err)
             continue
         }
 
@@ -91,7 +91,7 @@ func LintSensitiveFiles() error {
                     entropy := calculateEntropy(string(match))
                     // Only flag if entropy exceeds a threshold (e.g., 3.5).
                     if entropy > 3.5 {
-                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", file, re.String(), entropy)
+                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", Color(file, "yellow"), re.String(), entropy)
                         return
                     }
                 }
@@ -174,12 +174,12 @@ func LintAllCommitMessage() error {
         cmdMsg := exec.Command("git", "log", "-1", "--pretty=%B", hash)
         msgOut, err := cmdMsg.Output()
         if err != nil {
-            combinedErrors = append(combinedErrors, fmt.Sprintf("failed to get commit message for %s: %v", hash, err))
+            combinedErrors = append(combinedErrors, fmt.Sprintf("failed to get commit message for %s: %v", Color(hash, "red"), err))
             continue
         }
         message := strings.TrimSpace(string(msgOut))
         if err := LintCommitMessage(message); err != nil {
-            combinedErrors = append(combinedErrors, fmt.Sprintf("commit %s: %v", hash, err))
+            combinedErrors = append(combinedErrors, fmt.Sprintf("commit %s: %v", Color(hash, "red"), err))
         }
     }
     if len(combinedErrors) > 0 {
