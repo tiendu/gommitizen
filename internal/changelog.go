@@ -14,16 +14,18 @@ import (
 type commitEntry struct {
     hash    string
     date    string
+    author  string
     ctype   string
     subject string
 }
 
-// GenerateChangelog runs "git log" to extract commit messages (including commit date),
+// GenerateChangelog runs "git log" to extract commit messages (including commit date and author),
 // processes them concurrently, groups them by commit type, and writes the results to CHANGELOG.md.
 func GenerateChangelog() error {
-    // Run git log with a custom format: hash | date | subject.
+    // Run git log with a custom format: hash | date | author | subject.
     // Using a delimiter (|) makes parsing easier.
-    cmd := exec.Command("git", "log", "--pretty=format:%h|%ad|%s", "--date=iso")
+    // --date=iso will output the commit date in ISO 8601 format (which includes the timezone offset).
+    cmd := exec.Command("git", "log", "--pretty=format:%h|%ad|%an|%s", "--date=iso")
     out, err := cmd.CombinedOutput()
     if err != nil {
         return fmt.Errorf("failed to run git log: %v", err)
@@ -48,15 +50,16 @@ func GenerateChangelog() error {
         wg.Add(1)
         go func(l string) {
             defer wg.Done()
-            // Expect the format: "<hash>|<date>|<subject>"
-            parts := strings.SplitN(l, "|", 3)
-            if len(parts) < 3 {
+            // Expect the format: "<hash>|<date>|<author>|<subject>"
+            parts := strings.SplitN(l, "|", 4)
+            if len(parts) < 4 {
                 // Skip malformed lines.
                 return
             }
             hash := parts[0]
             date := strings.TrimSpace(parts[1])
-            subjectLine := parts[2]
+            author := strings.TrimSpace(parts[2])
+            subjectLine := parts[3]
 
             // Extract commit type from subject (if a colon exists).
             ctype := "unknown"
@@ -67,6 +70,7 @@ func GenerateChangelog() error {
             commitCh <- commitEntry{
                 hash:    hash,
                 date:    date,
+                author:  author,
                 ctype:   ctype,
                 subject: subjectLine,
             }
@@ -89,8 +93,8 @@ func GenerateChangelog() error {
     for typ, entries := range groups {
         buf.WriteString(fmt.Sprintf("## %s\n\n", typ))
         for _, e := range entries {
-            // Include hash, date, and subject for each commit.
-            buf.WriteString(fmt.Sprintf("- [%s] %s %s\n", e.hash, e.date, e.subject))
+            // Include hash, date, author, and subject for each commit.
+            buf.WriteString(fmt.Sprintf("- [%s] %s by %s: %s\n", e.hash, e.date, e.author, e.subject))
         }
         buf.WriteString("\n")
     }

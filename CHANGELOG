@@ -1,33 +1,37 @@
 # Changelog
 
-## feat
-
-- [92bd079] 2025-03-10 00:07:31 +0700 feat: add color highlighting
-- [e705293] 2025-03-09 18:37:15 +0700 feat: check for git worktree dir before commit
-- [9a64ab9] 2025-02-17 15:12:44 +0700 feat: use entropy for linter to avoid false positives
-- [8a4fa7e] 2025-02-27 23:50:30 +0700 feat: Custom path installation
-- [77236e5] 2025-02-17 11:01:39 +0700 feat: linter now can check if sensitive info exists in staged files
-
-## style
-
-- [0c07bd0] 2025-02-17 10:05:16 +0700 style: add newlines to make it easy to read
-
-## unknown
-
-- [d221f76] 2025-02-15 15:50:08 +0700 squashed
-- [6fa11b2] 2025-02-15 00:26:14 +0700 init
-
 ## refactor
 
-- [a36be00] 2025-03-12 18:10:48 +0700 refactor: adjust to meet https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with-scope (#4)
-- [3b3fd6e] 2025-03-02 22:47:07 +0700 refactor: rename command.go to options.go
-- [c575f32] 2025-03-05 14:45:10 +0700 refactor: adjust changelog.md to changelog
-- [7245aed] 2025-03-02 22:31:55 +0700 refactor: reorganize commands to a separate dir
-- [e729452] 2025-03-02 22:32:37 +0700 refactor: uninstall now look for path where bin is located
-- [e589af4] 2025-03-09 22:10:06 +0700 refactor: add help, remove available commands directly from gommitizen binary
+- [fe9e85e] 2025-03-13 17:27:09 +0700 by tiendu: refactor: reorganize lint flags to options.go
+- [3fc7f76] 2025-03-13 17:11:25 +0700 by tiendu: refactor: color error messages
+- [7f1766d] 2025-03-12 18:10:48 +0700 by Tien Du: refactor: adjust to meet conventionalcommits (#4)
+- [6c6fbc4] 2025-03-09 22:10:06 +0700 by tiendu: refactor: add help, remove available commands directly from gommitizen binary
+- [539cfa9] 2025-03-02 22:47:07 +0700 by tiendu: refactor: rename command.go to options.go
+- [860f989] 2025-03-05 14:45:10 +0700 by Tien Du: refactor: adjust changelog.md to changelog
+- [8d198a0] 2025-03-02 22:32:37 +0700 by tiendu: refactor: uninstall now look for path where bin is located
+- [74b9329] 2025-03-02 22:31:55 +0700 by tiendu: refactor: reorganize commands to a separate dir
+
+## feat
+
+- [fc825f1] 2025-03-10 00:07:31 +0700 by Tien Du: feat: add color highlighting
+- [1c400e5] 2025-03-13 13:39:30 +0700 by tiendu: feat: linting now works for current and all commits
+- [4012551] 2025-03-09 18:37:15 +0700 by Tien Du: feat: check for git worktree dir before commit
+- [e5b314a] 2025-02-15 00:26:14 +0700 by tiendu: feat: gommitizen init
+- [e2c29d1] 2025-02-17 11:01:39 +0700 by Tien Du: feat: linter now can check if sensitive info exists in staged files
+- [284965a] 2025-02-17 15:12:44 +0700 by Tien Du: feat: use entropy for linter to avoid false positives
+- [d198c22] 2025-02-27 23:50:30 +0700 by tiendu: feat: Custom path installation
+
+## chore
+
+- [e15a46a] 2025-03-12 18:13:49 +0700 by Tien Du: chore: clean up project dir
+- [b87265c] 2025-02-15 15:50:08 +0700 by tiendu: chore: clean up
 
 ## fix
 
-- [8665c06] 2025-03-12 18:07:30 +0700 fix: now recognize gitdir even in subdir (#3)
-- [dc941d6] 2025-03-09 21:09:42 +0700 fix: missing strings lib
+- [83eac8a] 2025-03-12 18:07:30 +0700 by Tien Du: fix: now recognize gitdir even in subdir (#3)
+- [076b2a9] 2025-03-09 21:09:42 +0700 by tiendu: fix: missing strings lib
+
+## style
+
+- [0eac61d] 2025-02-17 10:05:16 +0700 by Tien Du: style: add newlines to make it easy to read
 
