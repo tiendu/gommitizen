@@ -54,14 +54,14 @@ func main() {
         if opts.All {
             err = internal.LintAllCommitMessage()
             if err != nil {
-                fmt.Printf(err.Error())
+                fmt.Println(err.Error())
                 os.Exit(1)
             }
             fmt.Println(internal.Color("All commit messages pass linting.", "green"))
         } else if opts.Current {
             err := internal.LintCurrentCommitMessage()
             if err != nil {
-                fmt.Printf(err.Error())
+                fmt.Println(err.Error())
                 os.Exit(1)
             }
             fmt.Println(internal.Color("Current commit message passes linting.", "green"))

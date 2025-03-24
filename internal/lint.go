@@ -3,9 +3,9 @@ package internal
 import (
     "fmt"
     "strings"
-    "io/ioutil"
     "math"
     "os"
+    "io"
     "os/exec"
     "regexp"
     "sync"
@@ -78,7 +78,7 @@ func LintSensitiveFiles() error {
         go func(file string, f *os.File) {
             defer wg.Done()
             defer f.Close()
-            data, err := ioutil.ReadAll(f)
+            data, err := io.ReadAll(f)
             if err != nil {
                 // Skip files that cannot be read.
                 return

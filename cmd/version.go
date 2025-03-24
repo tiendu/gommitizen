@@ -1,7 +1,7 @@
 package cmd
 
 import (
-    "io/ioutil"
+    "os"
     "strconv"
     "strings"
     "fmt"
@@ -12,7 +12,7 @@ import (
 // - If version is in the format X.Y.Z, it increments Z (patch version).
 func BumpVersion() (string, error) {
     // Read the current version from the VERSION file.
-    data, err := ioutil.ReadFile("VERSION")
+    data, err := os.ReadFile("VERSION")
     if err != nil {
         return "", fmt.Errorf("failed to read VERSION file: %v", err)
     }
@@ -53,7 +53,7 @@ func BumpVersion() (string, error) {
     }
 
     // Write the new version back to the VERSION file.
-    if err := ioutil.WriteFile("VERSION", []byte(newVersion), 0644); err != nil {
+    if err := os.WriteFile("VERSION", []byte(newVersion), 0644); err != nil {
         return "", fmt.Errorf("failed to write VERSION file: %v", err)
     }
 

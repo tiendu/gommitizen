@@ -3,7 +3,7 @@ package internal
 import (
     "bytes"
     "fmt"
-    "io/ioutil"
+    "os"
     "os/exec"
     "path/filepath"
     "strings"
@@ -101,7 +101,7 @@ func GenerateChangelog() error {
 
     // Write the content to CHANGELOG.
     changelogPath := filepath.Join(".", "CHANGELOG")
-    if err := ioutil.WriteFile(changelogPath, buf.Bytes(), 0644); err != nil {
+    if err := os.WriteFile(changelogPath, buf.Bytes(), 0644); err != nil {
         return fmt.Errorf("failed to write CHANGELOG: %v", err)
     }
     fmt.Println("Changelog generated in", changelogPath)

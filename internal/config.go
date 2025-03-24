@@ -5,7 +5,6 @@ import (
     "bytes"
     "encoding/json"
     "fmt"
-    "io/ioutil"
     "log"
     "os"
     "path/filepath"
@@ -47,7 +46,7 @@ type Config struct {
 func LoadConfig() (Config, error) {
     var cfg Config
     configPath := filepath.Join("configs", "default.json")
-    data, err := ioutil.ReadFile(configPath)
+    data, err := os.ReadFile(configPath)
     if err != nil {
         return cfg, fmt.Errorf("failed to read config file %s: %v", configPath, err)
     }
