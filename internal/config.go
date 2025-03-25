@@ -154,7 +154,7 @@ func CollectUserInput(cfg Config) map[string]string {
         var input string
         for {
             // Print the field description using bold and color.
-            // (Using our beautify helpers: Bold and Color.)
+            // (Using our utils helpers: Bold and Color.)
             fmt.Println(Bold(Color(item.Desc, "cyan")))
             if item.Hint != "" {
                 fmt.Println("Hint:", item.Hint)
