@@ -6,6 +6,7 @@ import (
 
     "gommitizen/cmd"
     "gommitizen/internal"
+    "gommitizen/internal/utils"
 )
 
 func main() {
@@ -57,14 +58,14 @@ func main() {
                 fmt.Println(err.Error())
                 os.Exit(1)
             }
-            fmt.Println(internal.Color("All commit messages pass linting.", "green"))
+            fmt.Println(utils.Color("All commit messages pass linting.", "green"))
         } else if opts.Current {
             err := internal.LintCurrentCommitMessage()
             if err != nil {
                 fmt.Println(err.Error())
                 os.Exit(1)
             }
-            fmt.Println(internal.Color("Current commit message passes linting.", "green"))
+            fmt.Println(utils.Color("Current commit message passes linting.", "green"))
         }
     default:
         // If an unknown command is provided, show help.

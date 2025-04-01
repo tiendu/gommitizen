@@ -11,6 +11,8 @@ import (
     "strconv"
     "strings"
     "text/template"
+
+    "gommitizen/internal/utils"
 )
 
 // Option represents a selectable option for a form item.
@@ -155,7 +157,7 @@ func CollectUserInput(cfg Config) map[string]string {
         for {
             // Print the field description using bold and color.
             // (Using our utils helpers: Bold and Color.)
-            fmt.Println(Bold(Color(item.Desc, "cyan")))
+            fmt.Println(utils.Bold(utils.Color(item.Desc, "cyan")))
             if item.Hint != "" {
                 fmt.Println("Hint:", item.Hint)
             }
@@ -167,17 +169,17 @@ func CollectUserInput(cfg Config) map[string]string {
                     if strings.ToLower(item.Name) == "type" {
                         fg, bg := getHighlightColors(option.Name)
                         fmt.Printf("%s) %s: %s\n",
-                            Color(strconv.Itoa(idx+1), "yellow"),
-                            Highlight(option.Name, fg, bg),
+                            utils.Color(strconv.Itoa(idx+1), "yellow"),
+                            utils.Highlight(option.Name, fg, bg),
                             option.Desc)
                     } else {
                         fmt.Printf("%s) %s: %s\n",
-                            Color(strconv.Itoa(idx+1), "yellow"),
+                            utils.Color(strconv.Itoa(idx+1), "yellow"),
                             option.Name,
                             option.Desc)
                     }
                 }
-                fmt.Print(Color("Enter option number: ", "green"))
+                fmt.Print(utils.Color("Enter option number: ", "green"))
             } else {
                 // For input or multiline fields.
                 prompt := "Enter value"
@@ -188,7 +190,7 @@ func CollectUserInput(cfg Config) map[string]string {
                     prompt += fmt.Sprintf(" (default: %s)", item.Default)
                 }
                 prompt += ": "
-                fmt.Print(Color(prompt, "green"))
+                fmt.Print(utils.Color(prompt, "green"))
             }
 
             rawInput, err := reader.ReadString('\n')

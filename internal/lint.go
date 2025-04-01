@@ -9,6 +9,8 @@ import (
     "os/exec"
     "regexp"
     "sync"
+
+    "gommitizen/internal/utils"
 )
 
 // calculateEntropy computes the Shannon entropy of a string.
@@ -69,7 +71,7 @@ func LintSensitiveFiles() error {
         // Open file.
         f, err := os.Open(file)
         if err != nil {
-            fmt.Printf("Warning: unable to open file %s: %v\n", Color(file, "yellow"), err)
+            fmt.Printf("Warning: unable to open file %s: %v\n", utils.Color(file, "yellow"), err)
             continue
         }
 
@@ -91,7 +93,7 @@ func LintSensitiveFiles() error {
                     entropy := calculateEntropy(string(match))
                     // Only flag if entropy exceeds a threshold (e.g., 3.5).
                     if entropy > 3.5 {
-                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", Color(file, "yellow"), re.String(), entropy)
+                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", utils.Color(file, "yellow"), re.String(), entropy)
                         return
                     }
                 }
@@ -174,12 +176,12 @@ func LintAllCommitMessage() error {
         cmdMsg := exec.Command("git", "log", "-1", "--pretty=%B", hash)
         msgOut, err := cmdMsg.Output()
         if err != nil {
-            combinedErrors = append(combinedErrors, fmt.Sprintf("failed to get commit message for %s: %v", Color(hash, "red"), err))
+            combinedErrors = append(combinedErrors, fmt.Sprintf("failed to get commit message for %s: %v", utils.Color(hash, "red"), err))
             continue
         }
         message := strings.TrimSpace(string(msgOut))
         if err := LintCommitMessage(message); err != nil {
-            combinedErrors = append(combinedErrors, fmt.Sprintf("commit %s: %v", Color(hash, "red"), err))
+            combinedErrors = append(combinedErrors, fmt.Sprintf("commit %s: %v", utils.Color(hash, "red"), err))
         }
     }
     if len(combinedErrors) > 0 {
