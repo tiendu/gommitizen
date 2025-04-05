@@ -47,16 +47,31 @@ type Config struct {
 // LoadConfig loads the configuration from the file "configs/default.json".
 func LoadConfig() (Config, error) {
     var cfg Config
-    configPath := filepath.Join("configs", "default.json")
-    data, err := os.ReadFile(configPath)
+
+    // Determine directory of the current binary
+    exePath, err := os.Executable()
     if err != nil {
-        return cfg, fmt.Errorf("failed to read config file %s: %v", configPath, err)
+        log.Printf("Warning: failed to get executable path: %v", err)
+    } else {
+        exeDir := filepath.Dir(exePath)
+        configPath := filepath.Join(exeDir, "configs", "default.json")
+
+        if _, err := os.Stat(configPath); err == nil {
+            data, err := os.ReadFile(configPath)
+            if err != nil {
+                return cfg, fmt.Errorf("failed to read config file %s: %v", configPath, err)
+            }
+            if err := json.Unmarshal(data, &cfg); err != nil {
+                return cfg, fmt.Errorf("failed to parse config file %s: %v", configPath, err)
+            }
+            log.Printf("Loaded config from %s\n", configPath)
+            return cfg, nil
+        }
     }
-    if err := json.Unmarshal(data, &cfg); err != nil {
-        return cfg, fmt.Errorf("failed to parse config file %s: %v", configPath, err)
-    }
-    log.Printf("Loaded config from %s\n", configPath)
-    return cfg, nil
+
+    // Fallback to built-in default config
+    log.Println("Config file not found. Using built-in default config.")
+    return LoadDefaultConfig(), nil
 }
 
 // LoadDefaultConfig returns a built-in default configuration as a fallback.

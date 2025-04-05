@@ -190,3 +190,8 @@ func LintAllCommitMessage() error {
     return nil
 }
 
+// LintSingleMessage lints a provided commit message string.
+func LintSingleMessage(message string) error {
+    return LintCommitMessage(message)
+}
+
