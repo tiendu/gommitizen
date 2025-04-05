@@ -1,19 +1,4 @@
-A lightweight, Go-based CLI tool for standardizing Git commit messages. It offers an interactive prompt that guides you through the process of composing a commit message that adheres to conventional commit formats. Gommitizen also includes commands for installing itself as a Git subcommand, checking version information, and more.
-
-## Why Only the Standard Library?
-Gommitizen is built exclusively with Go’s standard library. This design decision brings several benefits:
-
-- Simplicity: Fewer dependencies means a cleaner, more maintainable codebase.
-- Portability: The tool remains easily portable across different environments without worrying about external libraries.
-- Reliability: Go’s standard library is well-tested and maintained, reducing the risk of introducing third-party bugs.
-- Performance: Eliminating external dependencies minimizes build overhead and keeps execution fast.
-
-## Features
-- Interactive Commit Message Prompt: Guides you through entering the type, scope, subject, body, and footer of your commit message.
-- Customizable Configuration: Uses an external JSON configuration (`configs/default.json`) to define form fields, options, and a commit message template.
-- Git Integration: Executes Git commands to commit your changes using the generated commit message.
-  - Self-Installation as Git Subcommand: Easily install Gommitizen as a Git subcommand (git-cz) with a single command.
-  - Reinstall & Uninstall: Built-in commands to reinstall or uninstall the tool.
+A lightweight, Go-based configurable CLI tool for standardizing Git commit messages. It offers an interactive prompt that guides you through the process of composing a commit message that adheres to conventional commit formats. Gommitizen also includes commands for installing itself as a Git subcommand, checking version information, and more.
 
 ## Directory Structure
 
@@ -45,33 +30,69 @@ git clone https://github.com/tiendu/gommitizen.git
 cd gommitizen
 ```
 
-### Build the Binary:
+### Default install (recommended)
 
-- Use the Go compiler to build the tool: `go build -o gommitizen`.
+This will install `gommitizen` into `~/.local/bin/gommitizen` and copy the config.
 
-- This produces a portable binary named gommitizen.
+```bash
+go build -o gommitizen
+./gommitizen install
+```
 
-## Usage
+### Custom install path
 
-Gommitizen supports several subcommands. The main usage pattern is: `./gommitizen <command> [options]`
+You can specify a custom installation path:
 
-### Commands
-- `install`: Installs the tool as a Git subcommand (git-cz).
-- `reinstall`: Uninstalls and then reinstalls the tool.
-- `uninstall`: Uninstalls the tool from Git's exec path.
-- `version`: Prints version information.
-- `commit`: Runs the interactive commit prompt, which loads configuration from `configs/default.json`, collects user input, renders the commit message, and then executes git commit.
-- `lint`: Runs a linter to validate the commit message.
-- `changelog`: Generates a changelog depending on the type of commit.
-- `bump`: Updates the VERSION with the current version.
-- `INSTALL_PATH`: Custom path for the installation.
+```bash
+./gommitizen install --path /your/custom/path
+```
 
-### Configuration
+**NOTE**:  Make sure to add your install path to your `PATH` environment variable!
 
-Gommitizen uses a JSON configuration file located at `configs/default.json`. This file defines:
-- Form Fields: Such as type, scope, subject, body, and footer
-- Options for "select" Fields: For example, the available types of changes like feat, fix, docs, etc.
-- Commit Message Template: A Go template that assembles the final commit message based on your input.
+## Commands
 
-You can modify `configs/default.json` to customize the prompts and commit message format.
+### Install
+
+Install the tool to `~/.local/bin/gommitizen` and copy default configs.
+
+### Reinstall
+
+Uninstall and reinstall the tool.
+
+### Uninstall
+
+### Commit
+
+Create a commit interactively with `git-cz` command using the configured commit flow.
+
+### Lint
+
+Lint commit messages.
+
+```bash
+# Lint all commit messages in the repository
+git-cz lint --all
+git-cz lint -a
+
+# Lint only the current (latest) commit message
+git-cz lint --current
+git-cz lint -c
+
+# Optionally, lint a specific commit message directly
+git-cz lint "your commit message here"
+```
+
+## Configuration
+
+When installed, gommitizen copies its config to: `~/.local/bin/gommitizen/configs/default.json`
+
+You can edit this file to customize:
+
+- Commit types
+- Prompts
+- Template for commit messages
+
+If no config file is found, `gommitizen` will use a built-in default config.
+
+
 
