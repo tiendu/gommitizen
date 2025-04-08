@@ -7,6 +7,8 @@ import (
     "regexp"
     "syscall"
     "unsafe"
+    "time"
+    "math"
 )
 
 // ========================
@@ -305,24 +307,48 @@ func (t *TerminalUI) Run() (int, string, error) {
             return -1, "", fmt.Errorf("input read error: %v", err)
         }
 
+        targetIndex := t.selectedIndex
+
         switch key {
         case '↑', 'k':
-            t.selectedIndex--
-            if t.selectedIndex < 0 {
-                t.selectedIndex = len(t.menuOptions) - 1
+            targetIndex = t.selectedIndex - 1
+            if targetIndex < 0 {
+                targetIndex = len(t.menuOptions) - 1
             }
+
         case '↓', 'j':
-            t.selectedIndex++
-            if t.selectedIndex >= len(t.menuOptions) {
-                t.selectedIndex = 0
+            targetIndex = t.selectedIndex + 1
+            if targetIndex >= len(t.menuOptions) {
+                targetIndex = 0
             }
+
         case '\r', '\n':
             t.moveCursor(t.anchorRow+len(t.prevRenderBuffer)+1, 1)
-            fmt.Println("Selected", t.menuOptions[t.selectedIndex])
+            fmt.Println("Selected:", t.menuOptions[t.selectedIndex])
             return t.selectedIndex, t.menuOptions[t.selectedIndex], nil
+
         case 3: // Ctrl+C
             return -1, "", fmt.Errorf("cancelled by user")
         }
+
+        // Smooth step-by-step animation
+        if targetIndex != t.selectedIndex {
+            step := 1
+            if targetIndex < t.selectedIndex {
+                step = -1
+            }
+
+            steps := abs(targetIndex - t.selectedIndex)
+            for i := 1; i <= steps; i++ {
+                t.selectedIndex += step
+                t.renderMenu()
+
+                // Easing effect
+                delay := time.Duration(5 + int(math.Sqrt(float64(steps-i)) * 10)) * time.Millisecond
+                time.Sleep(delay)
+            }
+        }
+
         t.renderMenu()
     }
 }
@@ -383,4 +409,11 @@ func NewSelector(options []string, visible int, width int) *TerminalUI {
         maxVisibleOptions: visible,
         maxOptionWidth:    width,
     }
+}
+
+func abs(x int) int {
+    if x < 0 {
+        return -x
+    }
+    return x
 }

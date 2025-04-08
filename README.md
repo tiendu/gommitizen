@@ -4,21 +4,28 @@ A lightweight, Go-based configurable CLI tool for standardizing Git commit messa
 
 ```
 .
-├── CHANGELOG.md
+├── CHANGELOG               # Project changelog
 ├── cmd
-│   ├── options.go  # Contains install, reinstall, uninstall, and version commands.
-│   └── version.go  # Version management.
+│   ├── options.go          # Install, reinstall, uninstall, and version commands
+│   └── version.go          # Version management
 ├── configs
-│   └── default.json  # Default commit form configuration in JSON.
-├── go.mod
+│   └── default.json        # Default commit form configuration (JSON)
+├── go.mod                  # Go module definition
+├── gommitizen              # Built binary (after build)
 ├── internal
-│   ├── changelog.go  # Changelog generation.
-│   ├── commit.go # Handles commit message generation and execution.
-│   ├── config.go  # Loads and renders configuration from configs/default.json.
-│   ├── lint.go  # Commit message linter.
-├── LICENSE
-├── main.go
-└── README.md
+│   ├── changelog.go        # Changelog generation
+│   ├── commit.go           # Commit message generation and execution
+│   ├── config.go           # Load and render config from configs/default.json
+│   ├── lint.go             # Commit message linter
+│   └── utils               # Terminal UI and utilities
+│       ├── term_darwin.go  # Terminal handling for macOS
+│       ├── term_linux.go   # Terminal handling for Linux
+│       ├── text_mods.go    # Text formatting utilities (colors, underline, highlight)
+│       └── tui.go          # Terminal UI (TUI) core logic
+├── LICENSE                 # License file (MIT)
+├── main.go                 # Application entry point
+├── README.md               # Project documentation
+└── VERSION                 # Current app version
 ```
 
 ## Installation
@@ -49,50 +56,54 @@ You can specify a custom installation path:
 
 **NOTE**:  Make sure to add your install path to your `PATH` environment variable!
 
-## Commands
+## Usage
 
-### Install
+After installation, you'll have `git-cz` command available globally.
 
-Install the tool to `~/.local/bin/gommitizen` and copy default configs.
+### Create a Commit
 
-### Reinstall
+```bash
+git-cz commit
+```
 
-Uninstall and reinstall the tool.
+Launches an interactive prompt to compose your commit message.
 
-### Uninstall
-
-### Commit
-
-Create a commit interactively with `git-cz` command using the configured commit flow.
-
-### Lint
-
-Lint commit messages.
+### Lint Commit Messages
 
 ```bash
 # Lint all commit messages in the repository
 git-cz lint --all
 git-cz lint -a
 
-# Lint only the current (latest) commit message
+# Lint only the latest commit message
 git-cz lint --current
 git-cz lint -c
 
-# Optionally, lint a specific commit message directly
+# Optionally, lint a specific commit message string directly
 git-cz lint "your commit message here"
+```
+
+### Install / Reinstall / Uninstall
+
+```bash
+git-cz install      # Install gommitizen
+git-cz reinstall    # Reinstall gommitizen
+git-cz uninstall    # Uninstall gommitizen
 ```
 
 ## Configuration
 
-When installed, gommitizen copies its config to: `~/.local/bin/gommitizen/configs/default.json`
+Upon installation, gommitizen copies the config to:
+
+```bash
+~/.local/bin/gommitizen/configs/default.json
+```
 
 You can edit this file to customize:
 
 - Commit types
 - Prompts
-- Template for commit messages
+- Commit message templates
 
-If no config file is found, `gommitizen` will use a built-in default config.
-
-
+If no config file is found, gommitizen will use its built-in default config.
 
