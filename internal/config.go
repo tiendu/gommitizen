@@ -8,12 +8,15 @@ import (
     "log"
     "os"
     "path/filepath"
-    "strconv"
     "strings"
     "text/template"
 
     "gommitizen/internal/utils"
 )
+
+// =======================
+// Config Structs
+// =======================
 
 // Option represents a selectable option for a form item.
 type Option struct {
@@ -44,11 +47,14 @@ type Config struct {
     Message MessageConfig `json:"message"`
 }
 
-// LoadConfig loads the configuration from the file "configs/default.json".
+// =======================
+// Load Config
+// =======================
+
+// LoadConfig loads the configuration from the installed config file or fallback.
 func LoadConfig() (Config, error) {
     var cfg Config
 
-    // Determine directory of the current binary
     exePath, err := os.Executable()
     if err != nil {
         log.Printf("Warning: failed to get executable path: %v", err)
@@ -69,7 +75,6 @@ func LoadConfig() (Config, error) {
         }
     }
 
-    // Fallback to built-in default config
     log.Println("Config file not found. Using built-in default config.")
     return LoadDefaultConfig(), nil
 }
@@ -134,6 +139,10 @@ func LoadDefaultConfig() Config {
     return cfg
 }
 
+// =======================
+// Helpers
+// =======================
+
 // getHighlightColors returns the foreground and background colors for a change type option.
 func getHighlightColors(option string) (fg, bg string) {
     switch strings.ToLower(option) {
@@ -162,41 +171,52 @@ func getHighlightColors(option string) (fg, bg string) {
     }
 }
 
-// CollectUserInput prompts the user for input based on the configuration.
+// =======================
+// User Input Flow
+// =======================
+
+// CollectUserInput prompts the user interactively based on the configuration.
 func CollectUserInput(cfg Config) map[string]string {
     reader := bufio.NewReader(os.Stdin)
     userInput := make(map[string]string)
 
     for _, item := range cfg.Message.Items {
         var input string
+
         for {
-            // Print the field description using bold and color.
-            // (Using our utils helpers: Bold and Color.)
             fmt.Println(utils.Bold(utils.Color(item.Desc, "cyan")))
             if item.Hint != "" {
                 fmt.Println("Hint:", item.Hint)
             }
 
             if item.Form == "select" {
-                // List the options.
-                for idx, option := range item.Options {
-                    // For the "type" field, use our Highlight function.
+                options := make([]string, len(item.Options))
+                for i, option := range item.Options {
                     if strings.ToLower(item.Name) == "type" {
                         fg, bg := getHighlightColors(option.Name)
-                        fmt.Printf("%s) %s: %s\n",
-                            utils.Color(strconv.Itoa(idx+1), "yellow"),
+                        options[i] = fmt.Sprintf("%s: %s",
                             utils.Highlight(option.Name, fg, bg),
                             option.Desc)
                     } else {
-                        fmt.Printf("%s) %s: %s\n",
-                            utils.Color(strconv.Itoa(idx+1), "yellow"),
-                            option.Name,
-                            option.Desc)
+                        options[i] = fmt.Sprintf("%s: %s", option.Name, option.Desc)
                     }
                 }
-                fmt.Print(utils.Color("Enter option number: ", "green"))
+
+                visible := 5
+                if len(options) < visible {
+                    visible = len(options)
+                }
+
+                selector := utils.NewSelector(options, visible, 70)
+                selectedIndex, _, err := selector.Run()
+                if err != nil {
+                    fmt.Printf("Error during selection: %v\n", err)
+                    os.Exit(1)
+                }
+
+                input = item.Options[selectedIndex].Name
             } else {
-                // For input or multiline fields.
+                // Input / Multiline fields
                 prompt := "Enter value"
                 if item.Required {
                     prompt += " (required)"
@@ -205,39 +225,35 @@ func CollectUserInput(cfg Config) map[string]string {
                     prompt += fmt.Sprintf(" (default: %s)", item.Default)
                 }
                 prompt += ": "
+
                 fmt.Print(utils.Color(prompt, "green"))
+                rawInput, err := reader.ReadString('\n')
+                if err != nil {
+                    fmt.Printf("Error reading input: %v\n", err)
+                    continue
+                }
+                input = strings.TrimSpace(rawInput)
+                if input == "" && item.Default != "" {
+                    input = item.Default
+                }
+                if input == "" && item.Required {
+                    fmt.Println("This field is required.")
+                    continue
+                }
             }
 
-            rawInput, err := reader.ReadString('\n')
-            if err != nil {
-                fmt.Printf("Error reading input: %v\n", err)
-                continue
-            }
-            input = strings.TrimSpace(rawInput)
-            if input == "" && item.Default != "" {
-                input = item.Default
-            }
-            if input == "" && item.Required {
-                fmt.Println("This field is required.")
-                continue
-            }
-            break
+            break // exit field loop
         }
 
-        // For select fields, convert numeric input to the corresponding option name.
-        if item.Form == "select" && input != "" {
-            choice, err := strconv.Atoi(input)
-            if err != nil || choice < 1 || choice > len(item.Options) {
-                fmt.Println("Please enter a valid option number.")
-            } else {
-                input = item.Options[choice-1].Name
-            }
-        }
         userInput[item.Name] = input
     }
 
     return userInput
 }
+
+// =======================
+// Template Rendering
+// =======================
 
 // RenderTemplate renders the commit message template using the provided data.
 func RenderTemplate(cfg Config, data map[string]string) (string, error) {

@@ -18,7 +18,7 @@
           { "name": "WIP", "desc": "Work in progress" }
         ],
         "required": true,
-        "hint": "Choose one of the available change types. (Bold and colored in the prompt)"
+        "hint": "Choose one of the available change types."
       },
       {
         "name": "scope",
