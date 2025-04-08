@@ -344,7 +344,14 @@ func (t *TerminalUI) Run() (int, string, error) {
                 t.renderMenu()
 
                 // Easing effect
-                delay := time.Duration(5 + int(math.Sqrt(float64(steps-i)) * 10)) * time.Millisecond
+                minDelay := 40 * time.Millisecond
+                progress := float64(i) / float64(steps)
+                eased := (1 - math.Sin(progress * math.Pi / 2)) // easing factor between 1..0
+                delay := time.Duration(float64(minDelay) * eased)
+                
+                if delay < minDelay {
+                    delay = minDelay
+                }
                 time.Sleep(delay)
             }
         }
