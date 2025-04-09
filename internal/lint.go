@@ -9,6 +9,7 @@ import (
     "os/exec"
     "regexp"
     "sync"
+    "path/filepath"
 
     "gommitizen/internal/utils"
 )
@@ -29,7 +30,7 @@ func calculateEntropy(s string) float64 {
 }
 
 // LintSensitiveFiles checks staged files concurrently for sensitive information,
-// ignoring files in the "internal/" directory.
+// ignoring files in the "gommitizen" directory.
 func LintSensitiveFiles() error {
     cmd := exec.Command("git", "diff", "--cached", "--name-only")
     output, err := cmd.Output()
@@ -42,7 +43,7 @@ func LintSensitiveFiles() error {
         return nil
     }
 
-    // Use word boundaries in regex patterns.
+    // Regex patterns for sensitive info
     patterns := []string{
         `(?i)\bpassword\b`,
         `(?i)\bsecret\b`,
@@ -62,13 +63,24 @@ func LintSensitiveFiles() error {
 
     var wg sync.WaitGroup
     errCh := make(chan error, len(files))
+
     for _, file := range files {
-        // Skip files in the "internal/" directory.
-        if strings.HasPrefix(file, "internal/") {
+        if shouldSkipFile(file) {
             continue
         }
 
-        // Open file.
+        info, err := os.Stat(file)
+        if err != nil {
+            fmt.Printf("Warning: unable to stat file %s: %v\n", utils.Color(file, "yellow"), err)
+            continue
+        }
+
+        // Skip directories and special files
+        if !info.Mode().IsRegular() {
+            continue
+        }
+
+        // Try open the file, skip if unreadable
         f, err := os.Open(file)
         if err != nil {
             fmt.Printf("Warning: unable to open file %s: %v\n", utils.Color(file, "yellow"), err)
@@ -76,24 +88,25 @@ func LintSensitiveFiles() error {
         }
 
         wg.Add(1)
-        // Pass both the filename and the file handle to the goroutine.
         go func(file string, f *os.File) {
             defer wg.Done()
             defer f.Close()
+
             data, err := io.ReadAll(f)
             if err != nil {
-                // Skip files that cannot be read.
+                // Skip unreadable files (binary, etc.)
                 return
             }
 
             for _, re := range regexes {
                 if re.Match(data) {
-                    // Extract the matched substring.
                     match := re.Find(data)
                     entropy := calculateEntropy(string(match))
-                    // Only flag if entropy exceeds a threshold (e.g., 3.5).
                     if entropy > 3.5 {
-                        errCh <- fmt.Errorf("sensitive information detected in file: %s (pattern: %s, entropy: %.2f)", utils.Color(file, "yellow"), re.String(), entropy)
+                        errCh <- fmt.Errorf(
+                            "sensitive information detected in file: %s (pattern: %s, entropy: %.2f)",
+                            utils.Color(file, "yellow"), re.String(), entropy,
+                        )
                         return
                     }
                 }
@@ -195,3 +208,19 @@ func LintSingleMessage(message string) error {
     return LintCommitMessage(message)
 }
 
+// shouldSkipFile determines if a file should be excluded from linting.
+func shouldSkipFile(file string) bool {
+    base := filepath.Base(file)
+
+    // Skip gommitizen binary (adjust the name if your output path changes!)
+    if file == "gommitizen" || base == "gommitizen" {
+        return true
+    }
+
+    // Skip hidden files (optional)
+    if strings.HasPrefix(base, ".") {
+        return true
+    }
+
+    return false
+}
