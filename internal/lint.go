@@ -1,11 +1,11 @@
 package internal
 
 import (
+    "bufio"
     "fmt"
     "strings"
     "math"
     "os"
-    "io"
     "os/exec"
     "regexp"
     "sync"
@@ -92,25 +92,31 @@ func LintSensitiveFiles() error {
             defer wg.Done()
             defer f.Close()
 
-            data, err := io.ReadAll(f)
-            if err != nil {
-                // Skip unreadable files (binary, etc.)
-                return
-            }
+            scanner := bufio.NewScanner(f)
+            buf := make([]byte, 0, 64*1024) // 64KB initial buffer
+            scanner.Buffer(buf, 1024*1024) // Max 1MB line size
 
-            for _, re := range regexes {
-                if re.Match(data) {
-                    match := re.Find(data)
-                    entropy := calculateEntropy(string(match))
-                    if entropy > 3.5 {
-                        errCh <- fmt.Errorf(
-                            "sensitive information detected in file: %s (pattern: %s, entropy: %.2f)",
-                            utils.Color(file, "yellow"), re.String(), entropy,
-                        )
-                        return
+            for scanner.Scan() {
+                line := scanner.Bytes()
+                for _, re := range regexes {
+                    if re.Match(line) {
+                        match := re.Find(line)
+                        entropy := calculateEntropy(string(match))
+                        if entropy > 3.5 {
+                            errCh <- fmt.Errorf(
+                                "sensitive information detected in file: %s (pattern: %s, entropy: %.2f)",
+                                utils.Color(file, "yellow"), re.String(), entropy,
+                            )
+                            return
+                        }
                     }
                 }
             }
+
+            if err := scanner.Err(); err != nil {
+                fmt.Printf("Warning: error reading file %s: %v\n", utils.Color(file, "yellow"), err)
+            }
+
         }(file, f)
     }
 
