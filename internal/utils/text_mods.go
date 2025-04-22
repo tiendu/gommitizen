@@ -6,7 +6,7 @@ import (
 )
 
 // ansiRegexp matches ANSI escape sequences.
-var ansiRegexp = regexp.MustCompile(`\033\[[0-9;]*m`)
+var ansiRegexp = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]`)
 
 // StripANSI removes ANSI escape sequences from a string.
 func StripANSI(s string) string {
