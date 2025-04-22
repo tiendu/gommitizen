@@ -32,6 +32,12 @@ func calculateEntropy(s string) float64 {
 // LintSensitiveFiles checks staged files concurrently for sensitive information,
 // ignoring files in the "gommitizen" directory.
 func LintSensitiveFiles() error {
+    gitRootBytes, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+    if err != nil {
+        return fmt.Errorf("failed to get git root: %v", err)
+    }
+    gitRoot := strings.TrimSpace(string(gitRootBytes))
+
     cmd := exec.Command("git", "diff", "--cached", "--name-only")
     output, err := cmd.Output()
     if err != nil {
@@ -69,7 +75,9 @@ func LintSensitiveFiles() error {
             continue
         }
 
-        info, err := os.Stat(file)
+        absPath := filepath.Join(gitRoot, file)
+
+        info, err := os.Stat(absPath)
         if err != nil {
             fmt.Printf("Warning: unable to stat file %s: %v\n", utils.Color(file, "yellow"), err)
             continue
@@ -81,7 +89,7 @@ func LintSensitiveFiles() error {
         }
 
         // Try open the file, skip if unreadable
-        f, err := os.Open(file)
+        f, err := os.Open(absPath)
         if err != nil {
             fmt.Printf("Warning: unable to open file %s: %v\n", utils.Color(file, "yellow"), err)
             continue
